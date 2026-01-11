@@ -489,3 +489,40 @@ async function safeRun(env, chatId, fn, errorTitle = "Something went wrong") {
   }
 }
 
+async function adminSetPrice(env, chatId, userId, text) {
+  if (!isAdmin(env, userId)) return send(env, chatId, "Admin only ❌");
+
+  return safeRun(env, chatId, async () => {
+    const parts = text.split(" ");
+    if (parts.length < 3) return replyWarn(env, chatId, "Usage", ["/setprice <id> <price_mmks>"]);
+
+    const id = Number(parts[1]);
+    const price = Number(parts[2]);
+    if (!Number.isFinite(id) || !Number.isFinite(price) || price <= 0) {
+      return replyWarn(env, chatId, "Invalid input", ["Example: /setprice 3 5500"]);
+    }
+
+    const before = await env.DB.prepare(
+      "SELECT id, game, name, price_mmks, is_active FROM packages WHERE id=?"
+    ).bind(id).first();
+
+    if (!before) return replyWarn(env, chatId, "Package not found", [`ID: ${id}`]);
+
+    await env.DB.prepare("UPDATE packages SET price_mmks=? WHERE id=?")
+      .bind(price, id).run();
+
+    const after = await env.DB.prepare(
+      "SELECT id, game, name, price_mmks, is_active FROM packages WHERE id=?"
+    ).bind(id).first();
+
+    return replyResult(env, chatId, "Price updated", [
+      `ID: ${after.id}`,
+      `Game: ${after.game}`,
+      `Name: ${after.name}`,
+      `Before: ${fmtMMK(before.price_mmks)}`,
+      `After: ${fmtMMK(after.price_mmks)}`,
+      `Status: ${after.is_active ? "ON" : "OFF"}`
+    ]);
+  }, "Failed to update price");
+}
+
