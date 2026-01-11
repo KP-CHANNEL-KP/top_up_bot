@@ -455,3 +455,37 @@ function parseAdmins(env) {
 function isAdmin(env, userId) {
   return parseAdmins(env).includes(userId);
 }
+
+function nowISO() {
+  return new Date().toISOString();
+}
+
+function fmtMMK(n) {
+  return `${Number(n).toLocaleString("en-US")} MMK`;
+}
+
+async function replyResult(env, chatId, title, lines = []) {
+  const body = lines.length ? ("\n" + lines.map(l => `• ${l}`).join("\n")) : "";
+  return send(env, chatId, `✅ ${title}${body}\n\n🕒 ${nowISO()}`);
+}
+
+async function replyWarn(env, chatId, title, lines = []) {
+  const body = lines.length ? ("\n" + lines.map(l => `• ${l}`).join("\n")) : "";
+  return send(env, chatId, `⚠️ ${title}${body}\n\n🕒 ${nowISO()}`);
+}
+
+async function replyError(env, chatId, title, err) {
+  // Err ကို user အတွက် friendly ဖြစ်အောင်
+  const msg = (err && err.message) ? err.message : String(err || "Unknown error");
+  return send(env, chatId, `❌ ${title}\n• ${msg}\n\n🕒 ${nowISO()}`);
+}
+
+/** Safe executor: အလုပ်တစ်ခုလုပ် → error တက်ရင် bot ကစာပြန် */
+async function safeRun(env, chatId, fn, errorTitle = "Something went wrong") {
+  try {
+    return await fn();
+  } catch (e) {
+    return replyError(env, chatId, errorTitle, e);
+  }
+}
+
