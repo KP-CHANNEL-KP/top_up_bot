@@ -1,0 +1,17 @@
+name = "topup-bot"
+main = "src/index.js"
+compatibility_date = "2025-12-01"
+
+[vars]
+BOT_TOKEN = "8339768377:AAGY5sREPZq2uv86y26vMI-gzmFgxKiICfg"
+ADMIN_IDS = "7070690379,987654321" # comma separated
+PAY_TEXT = "Wave/KBZPay လွှဲပြီး screenshot ပို့ပါ။\nName: YOURNAME\nAcc: YOURACC"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "topup-bot-db"
+database_id = "fc9fc77d-d220-4a06-b286-f542cbe1d0ed"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "604cb144c63844e1b954180a58310335"
